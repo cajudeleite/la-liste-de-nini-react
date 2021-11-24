@@ -1,0 +1,7 @@
+@use '../../styles/vars';
+
+.api-finder {
+  min-height: 100vh;
+  margin: 10px auto 0;
+  padding: vars.$gutter;
+}
