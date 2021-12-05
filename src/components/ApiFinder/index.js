@@ -1,5 +1,7 @@
 // on importe axios, une bibliothèque qui permet
 // d'effectuer des requêtes AJAX
+import { useEffect } from 'react';
+
 import axios from 'axios';
 
 import { Route, Switch } from 'react-router-dom';
@@ -8,7 +10,10 @@ import { Segment } from 'semantic-ui-react';
 
 import { useState } from 'react';
 
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+
+import { setSearchFilm, cleanSearchFilm, cleanVar, getData } from 'src/actions'
+
 
 // == Import
 import NavBar from '../NavBar';
@@ -25,6 +30,16 @@ import './styles.scss';
 
 // == Composant
 const ApiFinder = () => {
+
+  const dispatch = useDispatch();
+
+  useEffect(
+    () => {
+      console.log('Je vais chercher les infos du server');
+      dispatch(getData());
+    },
+    [],
+  );
   // Pour gérer la pagination :
   // - connaitre la manière de contacter l'api pour avoir une page particulière de résultats
   // https://api.github.com/search/repositories?q=REPOACHERCHER&sort=stars&order=desc&page=1&per_page=9
@@ -76,9 +91,12 @@ const ApiFinder = () => {
   const filmOverview = useSelector((state) => state.overview);
   const filmPoster_path = useSelector((state) => state.poster_path);
   const films = useSelector((state) => state.films);
+  const searchFilms = useSelector((state) => state.searchFilms);
+  const search_value = useSelector((state) => state.search_value);
 
   const search = () => {
     console.log('je vais EFFECTIVEMENT lancer la recherche');
+    dispatch(cleanVar());
 
     setIsLoading(true);
 
@@ -90,7 +108,7 @@ const ApiFinder = () => {
     // on réinitialise le nombre de résultats total
     setNbResults(0);
 
-    axios.get(`https://api.themoviedb.org/3/search/movie?api_key=a5b6184c80781706fbb134c3a33bf034&language=fr-FR&query=${searchValue}&page=${page}&include_adult=true`).then( // avec the, on définit le traiement à réaliser si la promesse est tenue
+    axios.get(`https://api.themoviedb.org/3/search/movie?api_key=a5b6184c80781706fbb134c3a33bf034&language=fr-FR&query=${search_value}&page=${page}&include_adult=true`).then( // avec the, on définit le traiement à réaliser si la promesse est tenue
       (response) => {
         console.log(response);
         // on récupère le tableau de repos dans la réponse
@@ -126,13 +144,14 @@ const ApiFinder = () => {
   };
 
   const searchMore = () => {
+    dispatch(cleanVar());
     setIsLoading(true);
 
     const newPage = page + 1;
 
     setPage(newPage);
 
-    axios.get(`https://api.themoviedb.org/3/search/movie?api_key=a5b6184c80781706fbb134c3a33bf034&language=fr-FR&query=${searchValue}&page=${page = newPage}&include_adult=true`).then(
+    axios.get(`https://api.themoviedb.org/3/search/movie?api_key=a5b6184c80781706fbb134c3a33bf034&language=fr-FR&query=${search_value}&page=${page = newPage}&include_adult=true`).then(
       (response) => {
         const reposFromApi = response.data.results;
 
@@ -174,28 +193,35 @@ const ApiFinder = () => {
     setMyNbResults(0);
 
      // avec the, on définit le traiement à réaliser si la promesse est tenue
-      const searchlist = (response) => {
-        console.log(response);
-        // on récupère le tableau de repos dans la réponse
-        const myReposFromApi = response.data;
-        // et le nombre de résultats
-        const myNbResultsFromApi = reposFromApi.length;
+      const searchlist = (bla) => {
+        dispatch(cleanSearchFilm());
+        dispatch(cleanVar());
+        let n = 0;
+        bla.map(
+          (film) => {
+            const lowerTitle = film.title.toLowerCase();
+            if (lowerTitle.includes(search_value.toLowerCase())) {
+              dispatch(setSearchFilm(
+                film.id,
+                film.title,
+                film.overview,
+                film.poster_path
+              ));
+              n = n+1;
+              console.log(n);
+            };
+          },
+        )
 
         // on mémomorise le nombre de résultat dans la variable d'état
-        setMyNbResults(myNbResultsFromApi);
-
-        // on formatte notre tableauy de repo
-        const myFormatedReposFromApi = simplifyRepos(myReposFromApi);
-        // on les range dans la variable d'état "repos"
-        setMyRepos(myFormatedReposFromApi);
+        setMyNbResults(n);
         // on vide le champ de recherche (vive les champs controllés)
         setSearchValue('');
         // je vais indiquer à l'utilisateur le nombre de repos retournés grâce à un message
-        displayMyMessage(`La recherche a retourné ${myNbResultsFromApi} résultats`);
+        myDisplayMessage(`La recherche a retourné ${n} résultats`);
 
         setIsMyLoading(false);
       };
-
       searchlist(films);
   };
 
@@ -209,7 +235,7 @@ const ApiFinder = () => {
     const moresearchlist = (response) => {
         const myReposFromApi = response.data;
 
-        const myFormatedReposFromApi = simplifyRepos(reposFromApi);
+        const myFormatedReposFromApi = simplifyMyRepos(myReposFromApi);
 
         // on prépare notre tableau de repo avec les tableau déjà présent
         // + les tableau fraichement récupérés.

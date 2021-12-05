@@ -1,7 +1,8 @@
+import axios from 'axios';
 import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Card, Image, Button } from 'semantic-ui-react';
-import { setIDValue, addNewFilm } from 'src/actions'
+import { setIDValue, addNewFilm, cleanVar } from 'src/actions'
 import { NavLink } from 'react-router-dom';
 
 const Item = ({
@@ -9,6 +10,7 @@ const Item = ({
 }) => {
 
   const dispatch = useDispatch();
+  const films = useSelector((state) => state.films)
 
   return (
   <Card onClick={() => {
@@ -23,6 +25,13 @@ const Item = ({
       <Button onClick={() => {
           dispatch(setIDValue(id, title, overview, poster_path));
           dispatch(addNewFilm(id, title, overview, poster_path));
+          dispatch(cleanVar());
+          axios.post(`http://localhost:3001/data`, { films })
+            .then((response) => {
+              console.log(response);
+              console.log(response.data);
+            })
+          window.scrollTo({ top:0, left: 0, behavior: 'smooth' })
         }} fluid basic color='green' style={{ margin: '20px auto 0' }} as={NavLink} to="/" exact>
         Ajouter ce film à ma liste
       </Button>

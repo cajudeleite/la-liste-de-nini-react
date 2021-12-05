@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux'
 import { Card, Image } from 'semantic-ui-react';
-import { setIDValue } from 'src/actions'
+import { setIDValue, cleanVar } from 'src/actions'
 import { NavLink } from 'react-router-dom';
 
 const MesItem = ({
@@ -13,6 +13,7 @@ const MesItem = ({
   return (
     <Card onClick={() => {
       dispatch(setIDValue(id, title, overview, poster_path));
+      dispatch(cleanVar());
     }} as={NavLink} to="/film" exact>
       <Image src={`https://image.tmdb.org/t/p/original${poster_path}`} wrapped ui={false} />
       <Card.Content>

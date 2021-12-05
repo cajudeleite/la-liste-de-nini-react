@@ -19,7 +19,6 @@ const RepoDetail = ( { id, poster_path, title, overview } ) => {
         </Card.Description>
         <Button onClick={() => {
           dispatch(addNewFilm(id, title, overview, poster_path));
-          console.log('Ajouté')
         }} fluid basic color='green' style={{ margin: '20px auto 0' }} as={NavLink} to="/" exact>Ajouter ce film à ma liste</Button>
       </Card.Content>
     </Card>

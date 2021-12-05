@@ -8,12 +8,12 @@ import { useSelector } from 'react-redux';
 
 const MaListe = ({ repos }) => {
 
-  const films = useSelector((state) => state.films);
+  const searchFilms = useSelector((state) => state.searchFilms);
 
   return (
     <Card.Group itemsPerRow={4} stackable>
       {
-        films.map(
+        searchFilms.map(
           (repo) => <MesItem key={repo.id} {...repo} />,
         )
       }
